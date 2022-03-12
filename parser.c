@@ -33,6 +33,13 @@ void free_card(CARD_T*);
 CARD_T *parse_card(char*);
 void print_card(CARD_T*);
 
+int comparator(const void *a, const void *b){
+	char *a_key = (char *) a; 
+	CARD_T *b_key = *(CARD_T **)b;	
+	return strcmp(a_key, b_key->name); 
+
+
+}
 /*
  * We'll make these global again, to make
  * things a bit easier
@@ -41,14 +48,46 @@ CARD_T **cards = NULL;
 size_t total_cards = 0;
 
 int main(int argc, char **argv) {
-	// TODO: 1. Open the file
+	char *lineptr = NULL; 
+	size_t n = 0; 
+	int read_bytes = 0; 
+
+	FILE *infile = fopen("hscards.csv", "r"); 
+	if (infile == NULL) {return -2; }
+
+	getline(&lineptr, &n, infile);
+       // sizeo f CARD_T*???	
+	CARD_T *result_card = malloc(sizeof(CARD_T)); 
 	//       2. Read lines from the file...
-	//          a. for each line, `parse_card()`
+	//          a. ft
+	//          or each line, `parse_card()`
     //          b. add the card to the array
+    	if ((read_bytes = getline(&lineptr, &n, infile))> 0){
+		printf("READ_BYTES: %d\n", read_bytes); 
+	
+	}
+	cards = malloc(sizeof(CARD_T*) *2 ); 
+	cards[0] = malloc(sizeof(CARD_T)); 
+	cards[1] = malloc(sizeof(CARD_T)); 
+	cards[0]->id = 2222; 
+	cards[0]->name = "File";
+	cards[1]->id = 2212; 
+	cards[1]->name = "Heyo"; 
+	char *bae = "Heyo"; 
+	unsigned ran = 2222; 
+	total_cards += 2; 
+	int ree = dupe_check(ran, bae); 
+	printf("%d\n", ree); 
 	//       3. Sort the array
 	//       4. Print and free the cards
 	//       5. Clean up!
-
+	//free(cards[0]->name); 
+	free(cards[0]); 
+        free(cards[1]); 	
+	free(cards); 
+	free(result_card);
+        free(lineptr); 	
+	fclose(infile); 
 	return 0;
 }
 
@@ -65,7 +104,28 @@ int main(int argc, char **argv) {
  *        index of the card so it may be removed...
  */
 int dupe_check(unsigned id, char *name) {
-	return 0;
+	CARD_T *result = lfind(name, cards, &total_cards, sizeof(CARD_T *), comparator); 
+	int result_val = 0; 
+	if (result != NULL){
+		if (result->id < id){
+			result_val = DUPE; 
+		}
+		else{
+			//NEED TO REPLACE OLD CARD W/ NEW 
+			//WAY TO HOLD PLACE STILL NEEDED
+			result_val = 0; 
+		}
+		printf("Result is: %s\n", result->name); 
+	
+	}
+	else{
+		printf("Result not found:\n"); 
+		result_val = NO_DUPE; 
+	}
+        
+		
+	 	
+	return result_val;
 }
 
 /*
