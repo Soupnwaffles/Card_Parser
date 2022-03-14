@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
 	cards[0] = malloc(sizeof(CARD_T)); 
 	cards[1] = malloc(sizeof(CARD_T)); 
 	cards[0]->id = 2222; 
-	cards[0]->name = "File";
+	cards[0]->name = "File"; 
 	cards[1]->id = 2212; 
 	cards[1]->name = "Heyo"; 
 	char *bae = "Heyo"; 
@@ -104,9 +104,10 @@ int main(int argc, char **argv) {
  *        index of the card so it may be removed...
  */
 int dupe_check(unsigned id, char *name) {
-	CARD_T *result = lfind(name, cards, &total_cards, sizeof(CARD_T *), comparator); 
+	CARD_T **resultpp = lfind(name, cards, &total_cards, sizeof(CARD_T *), comparator);   
 	int result_val = 0; 
-	if (result != NULL){
+	if (resultpp != NULL){
+		CARD_T *result = *resultpp; 
 		if (result->id < id){
 			result_val = DUPE; 
 		}
