@@ -62,17 +62,15 @@ int main(int argc, char **argv) {
 	//          a. ft
 	//          or each line, `parse_card()`
     //          b. add the card to the array
-    	if ((read_bytes = getline(&lineptr, &n, infile))> 0){
-		printf("READ_BYTES: %d\n", read_bytes); 
-	
-	}
-	cards = malloc(sizeof(CARD_T*) *2 ); 
-	cards[0] = malloc(sizeof(CARD_T)); 
-	cards[1] = malloc(sizeof(CARD_T)); 
-	cards[0]->id = 2222; 
-	cards[0]->name = "File"; 
-	cards[1]->id = 2212; 
-	cards[1]->name = "Heyo"; 
+    	if ((read_bytes = getline(&lineptr,&n,infile))>0){
+		result_card = parse_card(lineptr); 
+		if (result_card != NULL){
+			cards = realloc(cards, sizeof(CARD_T*) *(total_cards + 1)); 
+			cards[total_cards] = malloc(sizeof(CARD_T));
+		        cards[total_cards] = result_card; 
+			total_cards +=1; 	
+		}
+   	}
 	char *bae = "Heyo"; 
 	unsigned ran = 2222; 
 	total_cards += 2; 
@@ -82,8 +80,9 @@ int main(int argc, char **argv) {
 	//       4. Print and free the cards
 	//       5. Clean up!
 	//free(cards[0]->name); 
-	free(cards[0]); 
-        free(cards[1]); 	
+	for (int j = 0; j<total_cards; j++){
+		free(cards[j]); 
+	}
 	free(cards); 
 	free(result_card);
         free(lineptr); 	
@@ -109,6 +108,7 @@ int dupe_check(unsigned id, char *name) {
 	if (resultpp != NULL){
 		CARD_T *result = *resultpp; 
 		if (result->id < id){
+			//No need to replace, get rid of new id and name
 			result_val = DUPE; 
 		}
 		else{
@@ -116,16 +116,11 @@ int dupe_check(unsigned id, char *name) {
 			//WAY TO HOLD PLACE STILL NEEDED
 			result_val = 0; 
 		}
-		printf("Result is: %s\n", result->name); 
-	
 	}
 	else{
-		printf("Result not found:\n"); 
+		// Need to add card	 
 		result_val = NO_DUPE; 
 	}
-        
-		
-	 	
 	return result_val;
 }
 
@@ -152,7 +147,7 @@ char *fix_text(char *text) {
  * and then the card itself
  */
 void free_card(CARD_T *card) {
-
+	free(card); 
 }
 
 /*
@@ -174,7 +169,63 @@ void free_card(CARD_T *card) {
  * values it needs to be. Enums are just numbers!
  */
 CARD_T *parse_card(char *line) {
-	return NULL;
+	CARD_T * parsedcard = NULL; 
+
+	char *stringp = line; 
+	unsigned id = atoi(strsep(&stringp, ",")); 
+	stringp++; 
+	char *name = strsep(&stringp, "\""); 
+	stringp++; 
+	char *token; 
+	
+	int result = dupe_check(id, name); 
+	
+	if (result == DUPE){
+		//Do nothing, toss out stuff
+
+	}
+	else if (result == NO_DUPE){
+		parsedcard = realloc(parsedcard, sizeof(CARD_T)); 
+		parsedcard->id = id; 
+		parsedcard->name = name; 
+
+		//Parse cost
+		token = strsep(&stringp, ","); 
+		if (strlen(token) != 0 ){
+			parsedcard->cost = atoi(token); 
+		}
+		else{
+			parsedcard->cost = 0; 
+		}
+		int length = strlen(stringp); 
+		char *back ; 
+		int comma_count = 0; 	
+		//while (comma_count != 5){
+		for (int i = 0; i<length; i++){
+			back = &(stringp[(length-1)-i]);  
+		       	if (back[0] == ','){
+				comma_count += 1; 
+				printf("commacount increment\n"); 
+			}
+			if (comma_count ==5){
+			break; 
+			}
+			
+		}
+		//}
+		 
+		printf("back is: %s\n", back);  	
+	        printf("%s\n",token); 	
+		printf("stringp is %s\n", stringp);  
+
+	}
+		//Take string length remaining, for i = 0 to strlen: 
+		//Go backwards and strcmp(",") and if so add to count
+		//Once counting 5 of them record the address
+		//address found - current address = token
+		//stringp = addressfound 
+	
+	return parsedcard;
 }
 
 /*
