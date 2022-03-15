@@ -65,10 +65,8 @@ int main(int argc, char **argv) {
 		result_card = parse_card(lineptr); 
 		if (result_card != NULL){
 			cards = realloc(cards, sizeof(CARD_T*) *(total_cards + 1)); 
-			cards[total_cards] = malloc(sizeof(CARD_T));
-		        //cards[total_cards] = result_card; 
+			cards[total_cards] = malloc(sizeof(CARD_T)); 
 			memmove(cards[total_cards], result_card, sizeof(CARD_T)); 
-			printf("CARD: %s\n", cards[total_cards]->name); 
 			total_cards +=1; 	
 		}
    	}
@@ -141,7 +139,7 @@ char *fix_text(char *text) {
 	char *substring = "</b>";
 	char *alt_text = text; 
 	char *replace = strstr(alt_text, substring); 
-	
+	char *new_text = NULL; 	
 	if (replace != NULL){
 	do {
 		memmove(replace,END,strlen(END)); 
@@ -176,6 +174,28 @@ char *fix_text(char *text) {
 		replace = strstr(alt_text, substring); 	
 	} while (replace != NULL); 	
 	}
+	//HARD PART, adding characters, requires realloc
+	substring = "<b>";  
+       	//allocate new text space
+	size_t counter = strlen(alt_text); 
+	new_text = realloc(new_text, counter *sizeof(char) );
+        memmove(new_text, alt_text, counter); 	
+	replace = strstr(new_text, substring); 	
+	
+        if (replace != NULL){
+       		do {
+			counter += 1;  
+			//realloc more space
+			new_text = realloc(new_text, (counter) *sizeof(char)); 
+			memmove(replace + (strlen(substring)+1),
+				replace+strlen(substring), 
+				strlen(replace)-strlen(substring)); 
+			memmove(replace, BOLD, strlen(BOLD));
+			replace = strstr(new_text, substring); 
+		} while (replace != NULL); 	
+        }	      
+        printf("NEW TEXT: %s\n", new_text); 
+	free(new_text); 	
 	return alt_text; 
 }
 
@@ -239,23 +259,32 @@ CARD_T *parse_card(char *line) {
 		int length = strlen(stringp); 
 		char *back ; 
 		int comma_count = 0; 	
-		//while (comma_count != 5){
+		// Count 5 commas backwards from the end. 
 		for (int i = 0; i<length; i++){
 			back = &(stringp[(length-1)-i]);  
 		       	if (back[0] == ','){
 				comma_count += 1; 
-				printf("commacount increment\n"); 
+			
 			}
 			if (comma_count ==5){
 			break; 
 			}
 			
 		}
-		//}
-		 
-		printf("back is: %s\n", back);  	
-	        printf("%s\n",token); 	
-		printf("stringp is %s\n", stringp);  
+		// Now back should point only to the end.....
+		back -=1;
+		//size_t index = back - stringp;
+		//replace the \" where back points to with null pointer and save to token
+	        strcpy(back,"");
+		//increment back past the null pointer
+		//Save the text into token and set stringp to after the text
+	        back += 1; 
+		token = stringp; 
+		stringp = back;
+		//Fixtext for text in token
+		printf("TOKEN BEFORE: %s\n", token); 
+		token = fix_text(token);
+	        printf("token is: %s\n", token); 	
 
 	}
 		//Take string length remaining, for i = 0 to strlen: 
