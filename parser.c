@@ -56,8 +56,7 @@ int main(int argc, char **argv) {
 	if (infile == NULL) {return -2; }
 
 	getline(&lineptr, &n, infile);
-       // sizeo f CARD_T*???	
-	CARD_T *result_card = malloc(sizeof(CARD_T)); 
+   	CARD_T *result_card = NULL; 
 	//       2. Read lines from the file...
 	//          a. ft
 	//          or each line, `parse_card()`
@@ -67,21 +66,21 @@ int main(int argc, char **argv) {
 		if (result_card != NULL){
 			cards = realloc(cards, sizeof(CARD_T*) *(total_cards + 1)); 
 			cards[total_cards] = malloc(sizeof(CARD_T));
-		        cards[total_cards] = result_card; 
+		        //cards[total_cards] = result_card; 
+			memmove(cards[total_cards], result_card, sizeof(CARD_T)); 
+			printf("CARD: %s\n", cards[total_cards]->name); 
 			total_cards +=1; 	
 		}
    	}
-	char *bae = "Heyo"; 
-	unsigned ran = 2222; 
-	total_cards += 2; 
-	int ree = dupe_check(ran, bae); 
-	printf("%d\n", ree); 
+	 
+
+ 
 	//       3. Sort the array
 	//       4. Print and free the cards
 	//       5. Clean up!
 	//free(cards[0]->name); 
 	for (int j = 0; j<total_cards; j++){
-		free(cards[j]); 
+		free_card(cards[j]); 
 	}
 	free(cards); 
 	free(result_card);
@@ -185,7 +184,9 @@ char *fix_text(char *text) {
  * and then the card itself
  */
 void free_card(CARD_T *card) {
-	free(card); 
+	//free(card->name);
+        //free(card->text); 
+	free(card); 	
 }
 
 /*
