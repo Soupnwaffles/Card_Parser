@@ -187,6 +187,7 @@ char *fix_text(char *text) {
 			counter += 1;  
 			//realloc more space
 			new_text = realloc(new_text, (counter) *sizeof(char)); 
+			replace = strstr(new_text, substring); 
 			memmove(replace + (strlen(substring)+1),
 				replace+strlen(substring), 
 				strlen(replace)-strlen(substring)); 
