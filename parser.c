@@ -139,7 +139,45 @@ int dupe_check(unsigned id, char *name) {
  * there is the potential for a memory error!
  */
 char *fix_text(char *text) {
-	return NULL;
+	char *substring = "</b>";
+	char *alt_text = text; 
+	char *replace = strstr(alt_text, substring); 
+	
+	if (replace != NULL){
+	do {
+		memmove(replace,END,strlen(END)); 
+		replace = strstr(alt_text,substring); 
+	
+	} while(replace != NULL); 	
+	}
+	//next string to replace
+	substring = "</i>"; 
+	replace = strstr(alt_text,substring); 
+	if (replace != NULL){
+	do { 
+		memmove(replace, END, strlen(END)); 
+		replace = strstr(alt_text, substring); 
+	} while(replace != NULL); 
+	}
+	substring = "\\n";
+        replace = strstr(alt_text, substring);
+	if (replace != NULL){
+	do {
+		memmove(replace + strlen(substring)-1,replace + strlen(substring), strlen(replace) - strlen(substring)); 
+		memmove(replace, "\n", 1); 
+	        replace = strstr(alt_text, substring); 	
+	} while (replace != NULL); 
+	}
+	substring = "\"\"";
+        replace = strstr(alt_text, substring);
+	if (replace != NULL){
+	do {
+		memmove(replace + strlen(substring)-1, replace + strlen(substring), strlen(replace) -strlen(substring));
+		memmove(replace, "\"", 1);
+		replace = strstr(alt_text, substring); 	
+	} while (replace != NULL); 	
+	}
+	return alt_text; 
 }
 
 /*
@@ -224,7 +262,7 @@ CARD_T *parse_card(char *line) {
 		//Once counting 5 of them record the address
 		//address found - current address = token
 		//stringp = addressfound 
-	
+	 	
 	return parsedcard;
 }
 
