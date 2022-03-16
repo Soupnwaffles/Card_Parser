@@ -174,14 +174,18 @@ char *fix_text(char *text) {
 		replace = strstr(alt_text, substring); 	
 	} while (replace != NULL); 	
 	}
+	 
 	//HARD PART, adding characters, requires realloc
 	substring = "<b>";  
        	//allocate new text space
 	size_t counter = strlen(alt_text); 
-
-	new_text = realloc(new_text, counter *sizeof(char) );
-
-        memmove(new_text, alt_text, counter); 	
+	 
+	//new_text = realloc(new_text, counter *sizeof(char) );
+	new_text = realloc(new_text, counter+1); 
+	 
+	  
+	//new_text = strncpy(new_text, alt_text, counter-1);
+	new_text = strncpy(new_text, alt_text, counter); 
 
 	replace = strstr(new_text, substring); 	
 	
@@ -189,24 +193,28 @@ char *fix_text(char *text) {
        		do {
 			counter += 1;  
 			//realloc more space
-			new_text = realloc(new_text, (counter) *sizeof(char)); 
-
-			printf("strlen(newtext): %ld\n", strlen(new_text)); 
-
+			new_text = realloc(new_text, counter+1);
+		        	
+			//Initialize new text values? 
+			strncpy(new_text+counter-1, "", 2); 
+			//strncpy(new_text+counter, "", 1);
+		         	
+			//Strlen(new_text) uninitialized conditional	
 			replace = strstr(new_text, substring); 
-
+			
 			memmove(replace + (strlen(substring)+1),
 				replace+strlen(substring), 
 				strlen(replace)-strlen(substring)); 
 
+			
 			memmove(replace, BOLD, strlen(BOLD));
-
+			
 			replace = strstr(new_text, substring); 
 
 		} while (replace != NULL); 	
         }	      
         printf("NEW TEXT: %s\n", new_text); 
-	free(new_text); 	
+	alt_text = new_text;  	
 	return alt_text; 
 }
 
@@ -296,6 +304,9 @@ CARD_T *parse_card(char *line) {
 		printf("TOKEN BEFORE: %s\n", token); 
 		token = fix_text(token);
 	        printf("token is: %s\n", token); 	
+		//memmove(parsedcard->text, token, strlen(token));
+		
+	        free(token); 	
 
 	}
 		//Take string length remaining, for i = 0 to strlen: 
