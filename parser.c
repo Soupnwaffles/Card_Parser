@@ -61,6 +61,7 @@ int main(int argc, char **argv) {
 	//          a. ft
 	//          or each line, `parse_card()`
     //          b. add the card to the array
+    	do{
     	if ((read_bytes = getline(&lineptr,&n,infile))>0){
 		result_card = parse_card(lineptr); 
 		if (result_card != NULL){
@@ -70,6 +71,7 @@ int main(int argc, char **argv) {
 			total_cards +=1; 	
 		}
    	}
+	}while (read_bytes > 0); 
 	 
 
  
@@ -213,8 +215,31 @@ char *fix_text(char *text) {
 
 		} while (replace != NULL); 	
         }	      
-        printf("NEW TEXT: %s\n", new_text); 
+        substring = "<i>";
+        counter = strlen(new_text); 
+	
+	replace = strstr(new_text, substring); 
+	
+	if (replace != NULL){
+		do{
+			counter += 1; 
+			new_text = realloc(new_text, counter+1); 
+			strncpy(new_text+counter-1, "", 2); 
+			replace = strstr(new_text, substring); 
+
+			memmove(replace + (strlen(substring)+1), 
+				replace + strlen(substring), 
+				strlen(replace)-strlen(substring)); 
+
+			memmove(replace, ITALIC, strlen(ITALIC)); 
+			replace = strstr(new_text, substring); 
+		
+		}while (replace != NULL); 
+	
+	}	
+
 	alt_text = new_text;  	
+	printf("ALT TEXT: %s\n", alt_text); 
 	return alt_text; 
 }
 
@@ -224,7 +249,7 @@ char *fix_text(char *text) {
  */
 void free_card(CARD_T *card) {
 	//free(card->name);
-        //free(card->text); 
+        free(card->text); 
 	free(card); 	
 }
 
@@ -302,11 +327,19 @@ CARD_T *parse_card(char *line) {
 		stringp = back;
 		//Fixtext for text in token
 		printf("TOKEN BEFORE: %s\n", token); 
+		if (strlen(token) != 0){
 		token = fix_text(token);
-	        printf("token is: %s\n", token); 	
+		printf("Strlen is %ld\n", strlen(token));
+	       	parsedcard->text = token;   	 
+		token = strsep(&stringp, ",");  
+	        printf("text is: %s\n", parsedcard->text); 	
+		}
+		else{
+		parsedcard->text = ""; 
+		}
 		//memmove(parsedcard->text, token, strlen(token));
-		
-	        free(token); 	
+			
+	        //free(token); 	
 
 	}
 		//Take string length remaining, for i = 0 to strlen: 
