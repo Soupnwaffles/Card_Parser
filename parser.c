@@ -249,7 +249,9 @@ char *fix_text(char *text) {
  */
 void free_card(CARD_T *card) {
 	//free(card->name);
+	if (card->text != NULL){
         free(card->text); 
+	}
 	free(card); 	
 }
 
@@ -339,6 +341,9 @@ CARD_T *parse_card(char *line) {
 		}
 		}
 		else{
+		//Perhaps allocate space here for text anyways, so it can be freed.  
+		//temp = ""; 
+		//parsedcard->text = temp; 
 		parsedcard->text = ""; 
 		}
 		//memmove(parsedcard->text, token, strlen(token));
