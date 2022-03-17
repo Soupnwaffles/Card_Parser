@@ -322,8 +322,11 @@ CARD_T *parse_card(char *line) {
 	        strcpy(back,"");
 		//increment back past the null pointer
 		//Save the text into token and set stringp to after the text
-	        back += 1; 
+	        back += 1;
+	        if (strcmp(stringp, back) != 0){	
+		if (strlen(stringp)>0){
 		token = stringp; 
+		}
 		stringp = back;
 		//Fixtext for text in token
 		printf("TOKEN BEFORE: %s\n", token); 
@@ -333,6 +336,7 @@ CARD_T *parse_card(char *line) {
 	       	parsedcard->text = token;   	 
 		token = strsep(&stringp, ",");  
 	        printf("text is: %s\n", parsedcard->text); 	
+		}
 		}
 		else{
 		parsedcard->text = ""; 
