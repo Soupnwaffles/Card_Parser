@@ -140,7 +140,9 @@ int dupe_check(unsigned id, char *name) {
 char *fix_text(char *text) {
 	char *substring = "</b>";
 	char *alt_text = text; 
+	printf("before first replace\n"); 
 	char *replace = strstr(alt_text, substring); 
+	printf("after first replace\n"); 
 	char *new_text = NULL; 	
 	if (replace != NULL){
 	do {
@@ -187,10 +189,9 @@ char *fix_text(char *text) {
 	 
 	  
 	//new_text = strncpy(new_text, alt_text, counter-1);
-	new_text = strncpy(new_text, alt_text, counter); 
-
-	replace = strstr(new_text, substring); 	
-	
+	new_text = strncpy(new_text, alt_text, counter+1); 
+	 
+	replace = strstr(new_text, substring); 	 	
         if (replace != NULL){
        		do {
 			counter += 1;  
@@ -201,9 +202,8 @@ char *fix_text(char *text) {
 			strncpy(new_text+counter-1, "", 2); 
 			//strncpy(new_text+counter, "", 1);
 		         	
-			//Strlen(new_text) uninitialized conditional	
-			replace = strstr(new_text, substring); 
-			
+			//Strlen(new_text) uninitialized conditional	 
+			replace = strstr(new_text, substring);  	
 			memmove(replace + (strlen(substring)+1),
 				replace+strlen(substring), 
 				strlen(replace)-strlen(substring)); 
@@ -214,7 +214,8 @@ char *fix_text(char *text) {
 			replace = strstr(new_text, substring); 
 
 		} while (replace != NULL); 	
-        }	      
+        }	 
+   	printf("AFTER bold replace \n"); 	
         substring = "<i>";
         counter = strlen(new_text); 
 	
@@ -249,9 +250,7 @@ char *fix_text(char *text) {
  */
 void free_card(CARD_T *card) {
 	//free(card->name);
-	if (card->text != NULL){
         free(card->text); 
-	}
 	free(card); 	
 }
 
@@ -304,7 +303,8 @@ CARD_T *parse_card(char *line) {
 		}
 		int length = strlen(stringp); 
 		char *back ; 
-		int comma_count = 0; 	
+		int comma_count = 0; 
+		char *temp = NULL; 	
 		// Count 5 commas backwards from the end. 
 		for (int i = 0; i<length; i++){
 			back = &(stringp[(length-1)-i]);  
@@ -325,26 +325,28 @@ CARD_T *parse_card(char *line) {
 		//increment back past the null pointer
 		//Save the text into token and set stringp to after the text
 	        back += 1;
-	        if (strcmp(stringp, back) != 0){	
-		if (strlen(stringp)>0){
-		token = stringp; 
-		}
-		stringp = back;
+	        //if (strcmp(stringp, back) != 0){	
+		if (stringp != back){
+			
+			token = stringp; 
+			
+			stringp = back;
 		//Fixtext for text in token
-		printf("TOKEN BEFORE: %s\n", token); 
-		if (strlen(token) != 0){
-		token = fix_text(token);
-		printf("Strlen is %ld\n", strlen(token));
-	       	parsedcard->text = token;   	 
-		token = strsep(&stringp, ",");  
-	        printf("text is: %s\n", parsedcard->text); 	
-		}
+		//	printf("TOKEN BEFORE: %s\n", token); 
+		//if (strlen(token) != 0){
+			token = fix_text(token);
+		//	printf("Strlen is %ld\n", strlen(token));
+	       		parsedcard->text = token;   	 
+			token = strsep(&stringp, ",");  
+	       		printf("text is: %s\n", parsedcard->text); 	
+		//}
 		}
 		else{
 		//Perhaps allocate space here for text anyways, so it can be freed.  
-		//temp = ""; 
+		temp = realloc(temp, sizeof(char*));  
+		temp = ""; 
 		//parsedcard->text = temp; 
-		parsedcard->text = ""; 
+		parsedcard->text = temp; 
 		}
 		//memmove(parsedcard->text, token, strlen(token));
 			
