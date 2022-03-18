@@ -61,8 +61,9 @@ int main(int argc, char **argv) {
 	//          a. ft
 	//          or each line, `parse_card()`
     //          b. add the card to the array
+    	read_bytes = getline(&lineptr, &n, infile); 
     	do{
-    	if ((read_bytes = getline(&lineptr,&n,infile))>0){
+    	if (read_bytes >0){
 		result_card = parse_card(lineptr); 
 		if (result_card != NULL){
 			cards = realloc(cards, sizeof(CARD_T*) *(total_cards + 1)); 
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
 			total_cards +=1; 	
 		}
    	}
-	}while (read_bytes > 0); 
+	}while ((read_bytes=getline(&lineptr,&n,infile))>0); 
 	 
 
  
@@ -79,6 +80,7 @@ int main(int argc, char **argv) {
 	//       4. Print and free the cards
 	//       5. Clean up!
 	//free(cards[0]->name); 
+	printf("total cards is %ld\n", total_cards); 
 	for (int j = 0; j<total_cards; j++){
 		free_card(cards[j]); 
 	}
@@ -108,12 +110,16 @@ int dupe_check(unsigned id, char *name) {
 		CARD_T *result = *resultpp; 
 		if (result->id < id){
 			//No need to replace, get rid of new id and name
-			result_val = DUPE; 
+			result_val = DUPE;
+			printf("NO NEW, already exists\n"); 
+			printf("result is %s\n", result->name); 
 		}
 		else{
 			//NEED TO REPLACE OLD CARD W/ NEW 
 			//WAY TO HOLD PLACE STILL NEEDED
 			result_val = 0; 
+			printf("NO NEW need replace\n"); 
+			printf("result is %s\n", result->name); 
 		}
 	}
 	else{
@@ -151,6 +157,7 @@ char *fix_text(char *text) {
 	
 	} while(replace != NULL); 	
 	}
+	 
 	//next string to replace
 	substring = "</i>"; 
 	replace = strstr(alt_text,substring); 
@@ -169,13 +176,19 @@ char *fix_text(char *text) {
 	        replace = strstr(alt_text, substring); 	
 	} while (replace != NULL); 
 	}
-	substring = "\"\"";
+
+	substring = "\"\""; 
         replace = strstr(alt_text, substring);
+	int tempcount = 0; 
 	if (replace != NULL){
 	do {
-		memmove(replace + strlen(substring)-1, replace + strlen(substring), strlen(replace) -strlen(substring));
+		memmove(replace + strlen(substring)-1, replace + strlen(substring), strlen(replace) -strlen(substring)); 
+		strncpy(alt_text + strlen(alt_text)-1, "", 1); 
 		memmove(replace, "\"", 1);
+		
 		replace = strstr(alt_text, substring); 	
+		tempcount+=1; 
+	 
 	} while (replace != NULL); 	
 	}
 	 
@@ -239,7 +252,9 @@ char *fix_text(char *text) {
 	
 	}	
 
-	alt_text = new_text;  	
+	//alt_text = new_text;  	
+	alt_text = strdup(new_text);
+        free(new_text); 	
 	printf("ALT TEXT: %s\n", alt_text); 
 	return alt_text; 
 }
@@ -250,7 +265,10 @@ char *fix_text(char *text) {
  */
 void free_card(CARD_T *card) {
 	//free(card->name);
+	//printf("before free card text\n"); 
+	free(card->name); 
         free(card->text); 
+	//printf("after free card text \n"); 
 	free(card); 	
 }
 
@@ -291,7 +309,7 @@ CARD_T *parse_card(char *line) {
 	else if (result == NO_DUPE){
 		parsedcard = realloc(parsedcard, sizeof(CARD_T)); 
 		parsedcard->id = id; 
-		parsedcard->name = name; 
+		parsedcard->name = strdup(name); 
 
 		//Parse cost
 		token = strsep(&stringp, ","); 
@@ -318,7 +336,7 @@ CARD_T *parse_card(char *line) {
 			
 		}
 		// Now back should point only to the end.....
-		back -=1;
+	//	back -=1;
 		//size_t index = back - stringp;
 		//replace the \" where back points to with null pointer and save to token
 	        strcpy(back,"");
@@ -336,7 +354,7 @@ CARD_T *parse_card(char *line) {
 		//if (strlen(token) != 0){
 			token = fix_text(token);
 		//	printf("Strlen is %ld\n", strlen(token));
-	       		parsedcard->text = token;   	 
+	       		parsedcard->text = strdup(token);   	 
 			token = strsep(&stringp, ",");  
 	       		printf("text is: %s\n", parsedcard->text); 	
 		//}
