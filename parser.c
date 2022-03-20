@@ -4,6 +4,7 @@
 #include <string.h>
 #include "card.h"
 
+
 /*
  * I've left these definitions in from the
  * solution program. You don't have to
@@ -82,12 +83,14 @@ int main(int argc, char **argv) {
 	//free(cards[0]->name); 
 	printf("total cards is %ld\n", total_cards); 
 	for (int j = 0; j<total_cards; j++){
+		//printf("freed is %d\n", j); 
 		free_card(cards[j]); 
 	}
 	free(cards); 
 	free(result_card);
         free(lineptr); 	
 	fclose(infile); 
+
 	return 0;
 }
 
@@ -144,11 +147,11 @@ int dupe_check(unsigned id, char *name) {
  * there is the potential for a memory error!
  */
 char *fix_text(char *text) {
-	char *substring = "</b>";
+	char *substring = "</b>"; 
 	char *alt_text = text; 
-	printf("before first replace\n"); 
+	
 	char *replace = strstr(alt_text, substring); 
-	printf("after first replace\n"); 
+	
 	char *new_text = NULL; 	
 	if (replace != NULL){
 	do {
@@ -213,9 +216,7 @@ char *fix_text(char *text) {
 		        	
 			//Initialize new text values? 
 			strncpy(new_text+counter-1, "", 2); 
-			//strncpy(new_text+counter, "", 1);
-		         	
-			//Strlen(new_text) uninitialized conditional	 
+		
 			replace = strstr(new_text, substring);  	
 			memmove(replace + (strlen(substring)+1),
 				replace+strlen(substring), 
@@ -228,7 +229,7 @@ char *fix_text(char *text) {
 
 		} while (replace != NULL); 	
         }	 
-   	printf("AFTER bold replace \n"); 	
+   	
         substring = "<i>";
         counter = strlen(new_text); 
 	
@@ -252,9 +253,12 @@ char *fix_text(char *text) {
 	
 	}	
 
-	//alt_text = new_text;  	
-	alt_text = strdup(new_text);
-        free(new_text); 	
+	//alt_text = memmove(alt_text, new_text, strlen(new_text)); 
+	//strncpy(alt_text, new_text, strlen(new_text)+1);  
+	//alt_text = strsep(&new_text, "");  
+	alt_text = new_text;
+	//alt_text = new_text; 
+        //free(new_text); 	
 	printf("ALT TEXT: %s\n", alt_text); 
 	return alt_text; 
 }
@@ -265,10 +269,10 @@ char *fix_text(char *text) {
  */
 void free_card(CARD_T *card) {
 	//free(card->name);
-	//printf("before free card text\n"); 
 	free(card->name); 
+        if (strlen(card->text) != 0){	
         free(card->text); 
-	//printf("after free card text \n"); 
+	}
 	free(card); 	
 }
 
@@ -292,7 +296,6 @@ void free_card(CARD_T *card) {
  */
 CARD_T *parse_card(char *line) {
 	CARD_T * parsedcard = NULL; 
-
 	char *stringp = line; 
 	unsigned id = atoi(strsep(&stringp, ",")); 
 	stringp++; 
@@ -303,8 +306,7 @@ CARD_T *parse_card(char *line) {
 	int result = dupe_check(id, name); 
 	
 	if (result == DUPE){
-		//Do nothing, toss out stuff
-
+		//Do nothing, toss out stuff 	
 	}
 	else if (result == NO_DUPE){
 		parsedcard = realloc(parsedcard, sizeof(CARD_T)); 
@@ -322,7 +324,7 @@ CARD_T *parse_card(char *line) {
 		int length = strlen(stringp); 
 		char *back ; 
 		int comma_count = 0; 
-		char *temp = NULL; 	
+		char *temp = ""; 	
 		// Count 5 commas backwards from the end. 
 		for (int i = 0; i<length; i++){
 			back = &(stringp[(length-1)-i]);  
@@ -340,29 +342,39 @@ CARD_T *parse_card(char *line) {
 		//size_t index = back - stringp;
 		//replace the \" where back points to with null pointer and save to token
 	        strcpy(back,"");
+		token = strsep(&stringp, "\0"); 
+		if (total_cards > 3451){
+			printf("test\n"); 
+		}
 		//increment back past the null pointer
 		//Save the text into token and set stringp to after the text
 	        back += 1;
-	        //if (strcmp(stringp, back) != 0){	
-		if (stringp != back){
+	        //if (strcmp(stringp, back ) != 0){	
+		//if (stringp != back){
+		if (strlen(token)>0){
 			
-			token = stringp; 
+			//token = stringp; 
+			//token = strdup(stringp);  
+			 
 			
 			stringp = back;
 		//Fixtext for text in token
-		//	printf("TOKEN BEFORE: %s\n", token); 
+			printf("TOKEN BEFORE: %s\n", token); 
 		//if (strlen(token) != 0){
 			token = fix_text(token);
 		//	printf("Strlen is %ld\n", strlen(token));
 	       		parsedcard->text = strdup(token);   	 
+			free(token);
+			char *token; 
 			token = strsep(&stringp, ",");  
 	       		printf("text is: %s\n", parsedcard->text); 	
+			printf("TOKEN: %s\n", token); 
 		//}
 		}
 		else{
 		//Perhaps allocate space here for text anyways, so it can be freed.  
-		temp = realloc(temp, sizeof(char*));  
-		temp = ""; 
+		//temp = realloc(temp, sizeof(char));  
+		//temp = ""; 
 		//parsedcard->text = temp; 
 		parsedcard->text = temp; 
 		}
@@ -371,12 +383,13 @@ CARD_T *parse_card(char *line) {
 	        //free(token); 	
 
 	}
+		
 		//Take string length remaining, for i = 0 to strlen: 
 		//Go backwards and strcmp(",") and if so add to count
 		//Once counting 5 of them record the address
 		//address found - current address = token
 		//stringp = addressfound 
-	 	
+	 
 	return parsedcard;
 }
 
