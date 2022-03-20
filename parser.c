@@ -49,7 +49,8 @@ int comparator(const void *a, const void *b){
  */
 CARD_T **cards = NULL;
 size_t total_cards = 0;
-
+CARD_T *removedcard = NULL;  
+int cardreplace = 0; 
 int main(int argc, char **argv) {
 	char *lineptr = NULL; 
 	size_t n = 0; 
@@ -70,6 +71,11 @@ int main(int argc, char **argv) {
     	if (read_bytes >0){
 		result_card = parse_card(lineptr); 
 		if (result_card != NULL){
+			//if (cardreplace != 0){
+				//removedcard->id = result_card->id;
+			  //      cardreplace = 0; 	
+			//}
+			//else{
 			cards = realloc(cards, sizeof(CARD_T*) *(total_cards + 1)); 
 			cards[total_cards] = malloc(sizeof(CARD_T)); 
 			//cards[total_cards] = result_card; 
@@ -78,8 +84,9 @@ int main(int argc, char **argv) {
 			total_cards +=1; 	
 			printf("total/text: %s\n", cards[total_cards-1]->text); 
 			free(result_card); 
-			
+			//}
 		}
+	
    	}
 	}while ((read_bytes=getline(&lineptr,&n,infile))>0); 
 	 
@@ -116,22 +123,23 @@ int main(int argc, char **argv) {
  *        index of the card so it may be removed...
  */
 int dupe_check(unsigned id, char *name) {
-	CARD_T **resultpp = lfind(name, cards, &total_cards, sizeof(CARD_T *), comparator);   
+	CARD_T **resulttemp = lfind(name, cards, &total_cards, sizeof(CARD_T *), comparator);   
 	int result_val = 0; 
-	if (resultpp != NULL){
-		CARD_T *result = *resultpp; 
+	if (resulttemp != NULL){
+		CARD_T *result = *resulttemp; 
 		if (result->id < id){
 			//No need to replace, get rid of new id and name
-			result_val = DUPE;
-			printf("NO NEW, already exists\n"); 
-			printf("result is %s\n", result->name); 
+			result_val = DUPE; 
+		
 		}
 		else{
 			//NEED TO REPLACE OLD CARD W/ NEW 
 			//WAY TO HOLD PLACE STILL NEEDED
 			result_val = 0; 
-			printf("NO NEW need replace\n"); 
-			printf("result is %s\n", result->name); 
+			result->id = id; 	
+			//removedcard = result; 
+			//resulttemp->id = id; 
+			 
 		}
 	}
 	else{
@@ -262,13 +270,9 @@ char *fix_text(char *text) {
 	
 	}	
 
-	//alt_text = memmove(alt_text, new_text, strlen(new_text)); 
-	//strncpy(alt_text, new_text, strlen(new_text)+1);  
-	//alt_text = strsep(&new_text, "");  
+	
 	alt_text = new_text;
-	//alt_text = new_text; 
-        //free(new_text); 	
-	printf("ALT TEXT: %s\n", alt_text); 
+
 	return alt_text; 
 }
 
@@ -317,7 +321,12 @@ CARD_T *parse_card(char *line) {
 	if (result == DUPE){
 		//Do nothing, toss out stuff 	
 	}
+//	else if (result == 0){
+//		cardreplace = 1; 
+//		removedcard->id = id; 
+//	}
 	else if (result == NO_DUPE){
+		
 		parsedcard = realloc(parsedcard, sizeof(CARD_T)); 
 		parsedcard->id = id; 
 		parsedcard->name = strdup(name); 
@@ -352,9 +361,7 @@ CARD_T *parse_card(char *line) {
 		//replace the \" where back points to with null pointer and save to token
 	        strcpy(back,"");
 		token = strsep(&stringp, "\0"); 
-		if (total_cards > 3451){
-			printf("test\n"); 
-		}
+		
 		//increment back past the null pointer
 		//Save the text into token and set stringp to after the text
 	        back += 1;
@@ -366,19 +373,24 @@ CARD_T *parse_card(char *line) {
 			//token = strdup(stringp);  
 			 
 			
-			stringp = back;
+			//stringp = back;
 			 
 		//Fixtext for text in token
-			printf("TOKEN BEFORE: %s\n", token); 
+		 
 		//if (strlen(token) != 0){
 			token = fix_text(token);
 		//	printf("Strlen is %ld\n", strlen(token));
 	       		parsedcard->text = strdup(token);   	 
 			free(token);
-			char *token; 
-			token = strsep(&stringp, ",");  
-	       		//printf("text is: %s\n", parsedcard->text); 	
-			printf("TOKEN: %s\n", token); 
+			 	 
+		}
+		else{
+			parsedcard->text = temp; 
+		}
+			stringp = back; 
+
+			token = strsep(&stringp, ","); 
+			
 			if (strlen(token)<1){
 				parsedcard->attack = 0; 
 			}
@@ -392,21 +404,7 @@ CARD_T *parse_card(char *line) {
 			else{
 				parsedcard->health = atoi(token); 
 			}
-			token = strsep(&stringp, ",");
-		        	
-		
-		//}
-		}
-		else{
-		//Perhaps allocate space here for text anyways, so it can be freed.  
-		//temp = realloc(temp, sizeof(char));  
-		//temp = ""; 
-		//parsedcard->text = temp; 
-		parsedcard->text = temp; 
-		}
-		//memmove(parsedcard->text, token, strlen(token));
-			
-	        //free(token); 	
+			token = strsep(&stringp, ","); 	
 
 	}
 		
