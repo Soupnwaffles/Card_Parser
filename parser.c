@@ -28,6 +28,8 @@
  * You will have to implement all of these functions
  * as they are specifically unit tested by Mimir
  */
+void check_leaks(); 
+
 int dupe_check(unsigned, char*);
 char *fix_text(char*);
 void free_card(CARD_T*);
@@ -51,13 +53,14 @@ size_t total_cards = 0;
 int main(int argc, char **argv) {
 	char *lineptr = NULL; 
 	size_t n = 0; 
-	int read_bytes = 0; 
+	int read_bytes = 0;
+        CARD_T *result_card= NULL; 	
 
 	FILE *infile = fopen("hscards.csv", "r"); 
 	if (infile == NULL) {return -2; }
 
 	getline(&lineptr, &n, infile);
-   	CARD_T *result_card = NULL; 
+   	//CARD_T *result_card = NULL; 
 	//       2. Read lines from the file...
 	//          a. ft
 	//          or each line, `parse_card()`
@@ -69,13 +72,18 @@ int main(int argc, char **argv) {
 		if (result_card != NULL){
 			cards = realloc(cards, sizeof(CARD_T*) *(total_cards + 1)); 
 			cards[total_cards] = malloc(sizeof(CARD_T)); 
-			memmove(cards[total_cards], result_card, sizeof(CARD_T)); 
+			//cards[total_cards] = result_card; 
+			memcpy(cards[total_cards], result_card, sizeof(CARD_T)); 
+			//memmove(cards[total_cards], result_card, sizeof(CARD_T)); 
 			total_cards +=1; 	
+			printf("total/text: %s\n", cards[total_cards-1]->text); 
+			free(result_card); 
+			
 		}
    	}
 	}while ((read_bytes=getline(&lineptr,&n,infile))>0); 
 	 
-
+	
  
 	//       3. Sort the array
 	//       4. Print and free the cards
@@ -84,10 +92,11 @@ int main(int argc, char **argv) {
 	printf("total cards is %ld\n", total_cards); 
 	for (int j = 0; j<total_cards; j++){
 		//printf("freed is %d\n", j); 
+		//print_card(cards[j]); 
 		free_card(cards[j]); 
 	}
 	free(cards); 
-	free(result_card);
+	//free(result_card);
         free(lineptr); 	
 	fclose(infile); 
 
@@ -368,8 +377,24 @@ CARD_T *parse_card(char *line) {
 			free(token);
 			char *token; 
 			token = strsep(&stringp, ",");  
-	       		printf("text is: %s\n", parsedcard->text); 	
+	       		//printf("text is: %s\n", parsedcard->text); 	
 			printf("TOKEN: %s\n", token); 
+			if (strlen(token)<1){
+				parsedcard->attack = 0; 
+			}
+			else{
+				parsedcard->attack = atoi(token); 
+			}
+			token = strsep(&stringp, ",");
+		        if (strlen(token)<1){
+				parsedcard->health = 0; 
+			}	
+			else{
+				parsedcard->health = atoi(token); 
+			}
+			token = strsep(&stringp, ",");
+		        	
+		
 		//}
 		}
 		else{
