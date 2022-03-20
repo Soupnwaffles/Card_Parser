@@ -358,6 +358,7 @@ CARD_T *parse_card(char *line) {
 			 
 			
 			stringp = back;
+			 
 		//Fixtext for text in token
 			printf("TOKEN BEFORE: %s\n", token); 
 		//if (strlen(token) != 0){
