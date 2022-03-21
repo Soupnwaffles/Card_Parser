@@ -40,8 +40,12 @@ int comparator(const void *a, const void *b){
 	char *a_key = (char *) a; 
 	CARD_T *b_key = *(CARD_T **)b;	
 	return strcmp(a_key, b_key->name); 
-
-
+}
+int sort_compare(const void *a, const void *b){
+	const CARD_T *a_key = *(CARD_T **)a; 
+	const CARD_T *b_key = *(CARD_T **)b; 
+	return strcmp(a_key->name, b_key->name); 
+	
 }
 /*
  * We'll make these global again, to make
@@ -89,6 +93,7 @@ int main(int argc, char **argv) {
 	//       3. Sort the array
 	//       4. Print and free the cards
 	//       5. Clean up!
+	qsort(cards, total_cards, sizeof(CARD_T*), sort_compare); 
 	 
 	for (int j = 0; j<total_cards; j++){
 		
