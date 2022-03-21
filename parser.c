@@ -61,7 +61,8 @@ int main(int argc, char **argv) {
 	int read_bytes = 0;
         CARD_T *result_card= NULL; 	
 
-	FILE *infile = fopen("hscards.csv", "r"); 
+	//FILE *infile = fopen("hscards.csv", "r"); 
+	FILE *infile = fopen(argv[1], "r"); 
 	if (infile == NULL) {return -2; }
 
 	getline(&lineptr, &n, infile);
