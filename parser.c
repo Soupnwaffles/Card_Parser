@@ -388,15 +388,16 @@ CARD_T *parse_card(char *line) {
 			parsedcard->text = temp; 
 		}
 			stringp = back; 
-
-			token = strsep(&stringp, ","); 
 			
+		//Attack parsing
+			token = strsep(&stringp, ","); 	
 			if (strlen(token)<1){
 				parsedcard->attack = 0; 
 			}
 			else{
 				parsedcard->attack = atoi(token); 
 			}
+		// Health parsing
 			token = strsep(&stringp, ",");
 		        if (strlen(token)<1){
 				parsedcard->health = 0; 
@@ -404,8 +405,65 @@ CARD_T *parse_card(char *line) {
 			else{
 				parsedcard->health = atoi(token); 
 			}
+		// type parsing
 			token = strsep(&stringp, ","); 	
-
+			if (strlen(token)<1){
+				parsedcard->type= 0; 
+			}
+			else{
+				for(int z = 0; z<strlen(token); z++){
+					if(strncmp(token, type_str[z], 1)==0){ 
+						parsedcard->type = z; 
+						break;
+					}	
+				}
+			}
+		// class parsing
+			token = strsep(&stringp, ","); 
+			int checker= 1; 
+			if (strlen(token)<1){
+				parsedcard->class = 0; 
+			}
+			else{
+				for (int i = 0; i<(sizeof(class_str)/sizeof(class_str[0])); i++){
+					checker = 1; 
+					if (strlen(token) == strlen(class_str[i])){
+						for(int j=0; j<strlen(class_str[i]); j++){
+							if(class_str[i][j]<65 || class_str[i][j]>90){
+								if(token[j] == class_str[i][j]-32){
+									checker = 0; 
+								}
+								else{
+									checker = 1; 
+									break;
+								}
+							}
+							else{
+								if (token[j] != class_str[i][j]){
+									checker = 1; 
+									break; 
+								}
+								else{
+									checker = 0; 
+								}
+							}
+						}
+					}
+					if (checker == 0){
+						parsedcard->class = i; 
+						break; 
+					}
+				}
+			}
+		// rarity parsing
+		token = strsep(&stringp, ","); 
+		checker = 1; 
+		if (strlen(token) < 1){
+			parsedcard->rarity = 0; 
+		}
+		else{
+		
+		}
 	}
 		
 		//Take string length remaining, for i = 0 to strlen: 
