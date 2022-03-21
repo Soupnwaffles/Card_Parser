@@ -71,20 +71,14 @@ int main(int argc, char **argv) {
     	if (read_bytes >0){
 		result_card = parse_card(lineptr); 
 		if (result_card != NULL){
-			//if (cardreplace != 0){
-				//removedcard->id = result_card->id;
-			  //      cardreplace = 0; 	
-			//}
-			//else{
+			
 			cards = realloc(cards, sizeof(CARD_T*) *(total_cards + 1)); 
 			cards[total_cards] = malloc(sizeof(CARD_T)); 
-			//cards[total_cards] = result_card; 
 			memcpy(cards[total_cards], result_card, sizeof(CARD_T)); 
-			//memmove(cards[total_cards], result_card, sizeof(CARD_T)); 
+			
 			total_cards +=1; 	
-			printf("total/text: %s\n", cards[total_cards-1]->text); 
 			free(result_card); 
-			//}
+			
 		}
 	
    	}
@@ -95,15 +89,14 @@ int main(int argc, char **argv) {
 	//       3. Sort the array
 	//       4. Print and free the cards
 	//       5. Clean up!
-	//free(cards[0]->name); 
-	printf("total cards is %ld\n", total_cards); 
+	 
 	for (int j = 0; j<total_cards; j++){
-		//printf("freed is %d\n", j); 
-		//print_card(cards[j]); 
+		
+		print_card(cards[j]); 
 		free_card(cards[j]); 
 	}
 	free(cards); 
-	//free(result_card);
+	
         free(lineptr); 	
 	fclose(infile); 
 
@@ -133,12 +126,9 @@ int dupe_check(unsigned id, char *name) {
 		
 		}
 		else{
-			//NEED TO REPLACE OLD CARD W/ NEW 
-			//WAY TO HOLD PLACE STILL NEEDED
+			
 			result_val = 0; 
-			result->id = id; 	
-			//removedcard = result; 
-			//resulttemp->id = id; 
+			result->id = id; 	 
 			 
 		}
 	}
@@ -217,11 +207,8 @@ char *fix_text(char *text) {
        	//allocate new text space
 	size_t counter = strlen(alt_text); 
 	 
-	//new_text = realloc(new_text, counter *sizeof(char) );
 	new_text = realloc(new_text, counter+1); 
 	 
-	  
-	//new_text = strncpy(new_text, alt_text, counter-1);
 	new_text = strncpy(new_text, alt_text, counter+1); 
 	 
 	replace = strstr(new_text, substring); 	 	
@@ -231,7 +218,7 @@ char *fix_text(char *text) {
 			//realloc more space
 			new_text = realloc(new_text, counter+1);
 		        	
-			//Initialize new text values? 
+			 
 			strncpy(new_text+counter-1, "", 2); 
 		
 			replace = strstr(new_text, substring);  	
@@ -321,10 +308,7 @@ CARD_T *parse_card(char *line) {
 	if (result == DUPE){
 		//Do nothing, toss out stuff 	
 	}
-//	else if (result == 0){
-//		cardreplace = 1; 
-//		removedcard->id = id; 
-//	}
+
 	else if (result == NO_DUPE){
 		
 		parsedcard = realloc(parsedcard, sizeof(CARD_T)); 
@@ -355,9 +339,7 @@ CARD_T *parse_card(char *line) {
 			}
 			
 		}
-		// Now back should point only to the end.....
-	//	back -=1;
-		//size_t index = back - stringp;
+		// Now back should point only to the end
 		//replace the \" where back points to with null pointer and save to token
 	        strcpy(back,"");
 		token = strsep(&stringp, "\0"); 
@@ -406,7 +388,12 @@ CARD_T *parse_card(char *line) {
 				parsedcard->health = atoi(token); 
 			}
 		// type parsing
-			token = strsep(&stringp, ","); 	
+			stringp++; 
+			token = strsep(&stringp, "\"");
+			stringp++;
+			stringp++; 
+			 	
+		
 			if (strlen(token)<1){
 				parsedcard->type= 0; 
 			}
@@ -419,7 +406,9 @@ CARD_T *parse_card(char *line) {
 				}
 			}
 		// class parsing
-			token = strsep(&stringp, ","); 
+			token = strsep(&stringp, "\"");
+		        stringp++; 
+			stringp++; 	
 			int checker= 1; 
 			if (strlen(token)<1){
 				parsedcard->class = 0; 
@@ -456,13 +445,41 @@ CARD_T *parse_card(char *line) {
 				}
 			}
 		// rarity parsing
-		token = strsep(&stringp, ","); 
+		token = strsep(&stringp, "\""); 
 		checker = 1; 
 		if (strlen(token) < 1){
 			parsedcard->rarity = 0; 
 		}
 		else{
-		
+			for (int z = 0; z<(sizeof(rarity_str)/sizeof(rarity_str[0])); z++){
+                                        checker = 1;
+                                        if (strlen(token) == strlen(rarity_str[z])){
+                                                for(int w=0; w<strlen(rarity_str[z]); w++){
+                                                        if(rarity_str[z][w]<65 || rarity_str[z][w]>90){
+                                                                if(token[w] == rarity_str[z][w]-32){
+                                                                        checker = 0;
+                                                                }
+                                                                else{
+                                                                        checker = 1;
+                                                                        break;
+                                                                }
+                                                        }
+                                                        else{
+                                                                if (token[w] != rarity_str[z][w]){
+                                                                        checker = 1;
+                                                                        break;
+                                                                }
+                                                                else{
+                                                                        checker = 0;
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                        if (checker == 0){
+                                                parsedcard->rarity = z;
+                                                break;
+                                        }
+                       }	
 		}
 	}
 		
