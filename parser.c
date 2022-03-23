@@ -55,6 +55,8 @@ CARD_T **cards = NULL;
 size_t total_cards = 0;
 CARD_T *removedcard = NULL;  
 int cardreplace = 0; 
+
+
 int main(int argc, char **argv) {
 	char *lineptr = NULL; 
 	size_t n = 0; 
@@ -75,6 +77,7 @@ int main(int argc, char **argv) {
     	do{
     	if (read_bytes >0){
 		result_card = parse_card(lineptr); 
+	//	if (result_card != NULL && cardreplace ==0){
 		if (result_card != NULL){
 			
 			cards = realloc(cards, sizeof(CARD_T*) *(total_cards + 1)); 
@@ -84,7 +87,15 @@ int main(int argc, char **argv) {
 			total_cards +=1; 	
 			free(result_card); 
 			
+			
 		}
+//		else if (cardreplace ==1 && result_card != NULL){
+//			free_card(removedcard); 
+//			memcpy(removedcard, result_card, sizeof(CARD_T));
+//		        free(result_card); 
+//			cardreplace= 0; 	
+//		
+//		}
 	
    	}
 	}while ((read_bytes=getline(&lineptr,&n,infile))>0); 
@@ -129,12 +140,14 @@ int dupe_check(unsigned id, char *name) {
 		if (result->id < id){
 			//No need to replace, get rid of new id and name
 			result_val = DUPE; 
-		
+	
 		}
 		else{
 			
-			result_val = 0; 
-			result->id = id; 	 
+			result_val = 2;  
+			removedcard = result;
+		        
+			//free_card(resulttemp);  	 
 			 
 		}
 	}
@@ -187,7 +200,8 @@ char *fix_text(char *text) {
         replace = strstr(alt_text, substring);
 	if (replace != NULL){
 	do {
-		memmove(replace + strlen(substring)-1,replace + strlen(substring), strlen(replace) - strlen(substring)); 
+		memmove(replace + strlen(substring)-1,replace + strlen(substring), strlen(replace) - strlen(substring));
+	        strncpy(alt_text + strlen(alt_text)-1, "", 1); 	
 		memmove(replace, "\n", 1); 
 	        replace = strstr(alt_text, substring); 	
 	} while (replace != NULL); 
@@ -315,7 +329,7 @@ CARD_T *parse_card(char *line) {
 		//Do nothing, toss out stuff 	
 	}
 
-	else if (result == NO_DUPE){
+	else if (result == NO_DUPE || result == 2){
 		
 		parsedcard = realloc(parsedcard, sizeof(CARD_T)); 
 		parsedcard->id = id; 
@@ -347,12 +361,24 @@ CARD_T *parse_card(char *line) {
 		}
 		// Now back should point only to the end
 		//replace the \" where back points to with null pointer and save to token
+		//TODO: PREVIOUS BLOCK---------------------------------------- 
+	if (stringp != back){	//NEW
+		back -= 1; 
 	        strcpy(back,"");
-		token = strsep(&stringp, "\0"); 
+		back += 1;
+		strcpy(back,""); 
 		
+	        back += 1; 	
+		stringp++; 	
+		token = strsep(&stringp, "\0"); 
+		//---------------------------------------------------------------
+		//strcpy(back,""); 
+		//token = strsep(&stringp, "\0"); 
+		//back += 1; 
 		//increment back past the null pointer
 		//Save the text into token and set stringp to after the text
-	        back += 1;
+		//stringp = back; 		
+	        //back += 1;
 	        //if (strcmp(stringp, back ) != 0){	
 		//if (stringp != back){
 		if (strlen(token)>0){
@@ -366,25 +392,33 @@ CARD_T *parse_card(char *line) {
 		//Fixtext for text in token
 		 
 		//if (strlen(token) != 0){
-			token = fix_text(token);
+			//token = fix_text(token);
 		//	printf("Strlen is %ld\n", strlen(token));
-	       		parsedcard->text = strdup(token);   	 
-			free(token);
+			parsedcard->text = token; 
+	       		//parsedcard->text = strdup(token);   	 
+			parsedcard->text = fix_text(parsedcard->text); 
+			//free(token);
 			 	 
 		}
+		}//NEW IF STRINGP != BACK
 		else{
 			parsedcard->text = temp; 
+			back += 1; 
 		}
 			stringp = back; 
-			
 		//Attack parsing
+		
+		//If attack is not empty
+		//else{
 			token = strsep(&stringp, ","); 	
 			if (strlen(token)<1){
 				parsedcard->attack = 0; 
 			}
 			else{
 				parsedcard->attack = atoi(token); 
+				  
 			}
+		//}
 		// Health parsing
 			token = strsep(&stringp, ",");
 		        if (strlen(token)<1){
@@ -392,6 +426,7 @@ CARD_T *parse_card(char *line) {
 			}	
 			else{
 				parsedcard->health = atoi(token); 
+				 
 			}
 		// type parsing
 			stringp++; 
@@ -488,13 +523,27 @@ CARD_T *parse_card(char *line) {
                        }	
 		}
 	}
-		
-		//Take string length remaining, for i = 0 to strlen: 
-		//Go backwards and strcmp(",") and if so add to count
-		//Once counting 5 of them record the address
-		//address found - current address = token
-		//stringp = addressfound 
-	 
+       if (result == 2){
+      	removedcard->id = parsedcard->id; 
+      	removedcard->cost = parsedcard->cost; 
+	removedcard->attack = parsedcard->attack; 
+	removedcard->health = parsedcard->health; 
+	removedcard->type = parsedcard->type; 
+	removedcard->class = parsedcard->class; 
+	removedcard->rarity = parsedcard->rarity;  
+	if (strlen(removedcard->text) >1){
+	free(removedcard->text);
+	}
+	if (strlen(parsedcard->text)>1){
+	removedcard->text = strdup(parsedcard->text); 
+	}
+	else{
+	removedcard->text = ""; 
+	}	
+	free_card(parsedcard); 
+	parsedcard = NULL; 	
+       }	
+	
 	return parsedcard;
 }
 
