@@ -5,13 +5,6 @@
 #include "card.h"
 
 
-/*
- * I've left these definitions in from the
- * solution program. You don't have to
- * use them, but the `dupe_check()` function
- * unit test expects certain values to be
- * returned for certain situations!
- */
 #define DUPE -1
 #define NO_DUPE -2
 
@@ -24,10 +17,7 @@
 #define ITALIC "\e[3m"
 #define END "\e[0m"
 
-/*
- * You will have to implement all of these functions
- * as they are specifically unit tested by Mimir
- */
+
 void check_leaks(); 
 
 int dupe_check(unsigned, char*);
@@ -63,7 +53,7 @@ int main(int argc, char **argv) {
 	int read_bytes = 0;
         CARD_T *result_card= NULL; 	
 
-	//FILE *infile = fopen("hscards.csv", "r"); 
+	
 	FILE *infile = fopen(argv[1], "r"); 
 	if (infile == NULL) {return -2; }
 
@@ -77,7 +67,7 @@ int main(int argc, char **argv) {
     	do{
     	if (read_bytes >0){
 		result_card = parse_card(lineptr); 
-	//	if (result_card != NULL && cardreplace ==0){
+	
 		if (result_card != NULL){
 			
 			cards = realloc(cards, sizeof(CARD_T*) *(total_cards + 1)); 
@@ -87,15 +77,7 @@ int main(int argc, char **argv) {
 			total_cards +=1; 	
 			free(result_card); 
 			
-			
 		}
-//		else if (cardreplace ==1 && result_card != NULL){
-//			free_card(removedcard); 
-//			memcpy(removedcard, result_card, sizeof(CARD_T));
-//		        free(result_card); 
-//			cardreplace= 0; 	
-//		
-//		}
 	
    	}
 	}while ((read_bytes=getline(&lineptr,&n,infile))>0); 
@@ -165,12 +147,6 @@ int dupe_check(unsigned id, char *name) {
  *     3. replace every </b> and </i> with END
  *     4. replace every <b> with BOLD
  *     5. replace every <i> with ITALIC
- *
- * The first three are not too bad, but 4 and 5
- * are difficult because you are replacing 3 chars
- * with 4! You _must_ `realloc()` the field to
- * be able to insert an additional character else
- * there is the potential for a memory error!
  */
 char *fix_text(char *text) {
 	char *substring = "</b>"; 
@@ -222,7 +198,7 @@ char *fix_text(char *text) {
 	} while (replace != NULL); 	
 	}
 	 
-	//HARD PART, adding characters, requires realloc
+	// adding characters, requires realloc
 	substring = "<b>";  
        	//allocate new text space
 	size_t counter = strlen(alt_text); 
@@ -297,22 +273,12 @@ void free_card(CARD_T *card) {
 }
 
 /*
- * This is the tough one. There will be a lot of
- * logic in this function. Once you have the incoming
+ * Once you have the incoming
  * card's id and name, you should call `dupe_check()`
  * because if the card is a duplicate you have to
  * either abort parsing this one or remove the one
  * from the array so that this one can go at the end.
  *
- * To successfully parse the card text field, you
- * can either go through it (and remember not to stop
- * when you see two double-quotes "") or you can
- * parse backwards from the end of the line to locate
- * the _fifth_ comma.
- *
- * For the fields that are enum values, you have to
- * parse the field and then figure out which one of the
- * values it needs to be. Enums are just numbers!
  */
 CARD_T *parse_card(char *line) {
 	CARD_T * parsedcard = NULL; 
@@ -361,7 +327,7 @@ CARD_T *parse_card(char *line) {
 		}
 		// Now back should point only to the end
 		//replace the \" where back points to with null pointer and save to token
-		//TODO: PREVIOUS BLOCK---------------------------------------- 
+		
 	if (stringp != back){	//NEW
 		back -= 1; 
 	        strcpy(back,"");
@@ -371,33 +337,10 @@ CARD_T *parse_card(char *line) {
 	        back += 1; 	
 		stringp++; 	
 		token = strsep(&stringp, "\0"); 
-		//---------------------------------------------------------------
-		//strcpy(back,""); 
-		//token = strsep(&stringp, "\0"); 
-		//back += 1; 
-		//increment back past the null pointer
-		//Save the text into token and set stringp to after the text
-		//stringp = back; 		
-	        //back += 1;
-	        //if (strcmp(stringp, back ) != 0){	
-		//if (stringp != back){
+		
 		if (strlen(token)>0){
-			
-			//token = stringp; 
-			//token = strdup(stringp);  
-			 
-			
-			//stringp = back;
-			 
-		//Fixtext for text in token
-		 
-		//if (strlen(token) != 0){
-			//token = fix_text(token);
-		//	printf("Strlen is %ld\n", strlen(token));
-			parsedcard->text = token; 
-	       		//parsedcard->text = strdup(token);   	 
+			parsedcard->text = token;   	 
 			parsedcard->text = fix_text(parsedcard->text); 
-			//free(token);
 			 	 
 		}
 		}//NEW IF STRINGP != BACK
@@ -458,24 +401,24 @@ CARD_T *parse_card(char *line) {
 				for (int i = 0; i<(sizeof(class_str)/sizeof(class_str[0])); i++){
 					checker = 1; 
 					if (strlen(token) == strlen(class_str[i])){
-						for(int j=0; j<strlen(class_str[i]); j++){
-							if(class_str[i][j]<65 || class_str[i][j]>90){
-								if(token[j] == class_str[i][j]-32){
-									checker = 0; 
-								}
-								else{
-									checker = 1; 
-									break;
-								}
+					for(int j=0; j<strlen(class_str[i]); j++){
+						if(class_str[i][j]<65 || class_str[i][j]>90){
+							if(token[j] == class_str[i][j]-32){
+							checker = 0; 
 							}
 							else{
-								if (token[j] != class_str[i][j]){
-									checker = 1; 
-									break; 
+							checker = 1; 
+							break;
+							}
+							}
+							else{
+							if (token[j] != class_str[i][j]){
+								checker = 1; 
+								break; 
 								}
-								else{
-									checker = 0; 
-								}
+							else{
+								checker = 0; 
+							}
 							}
 						}
 					}
